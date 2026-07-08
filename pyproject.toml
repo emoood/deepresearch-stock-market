@@ -9,4 +9,10 @@ dependencies = [
     "langchain-groq>=1.1.3",
     "langgraph>=1.2.8",
     "python-dotenv>=1.2.2",
+    "tavily-python>=0.7.26",
+]
+
+[dependency-groups]
+dev = [
+    "langgraph-cli[inmem]>=0.4.30",
 ]
