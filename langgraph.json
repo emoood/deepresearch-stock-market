@@ -4,7 +4,8 @@
     "scope_research": "./research_agent_scope.py:scope_research",
     "research_agent": "./research_agent.py:researcher_agent",
     "research_agent_supervisor": "./multi_agent_supervisor.py:supervisor_agent",
-    "research_agent_full": "./research_agent_full.py:agent"
+    "research_agent_full": "./research_agent_full.py:agent",
+    "research_agent_no_supervisor": "./market_agent_without_supervisor.py:agent"
   },
   "env": ".env"
 }

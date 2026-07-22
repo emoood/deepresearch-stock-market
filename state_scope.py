@@ -4,17 +4,27 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph import MessagesState
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+import os
+from langchain_ollama import ChatOllama
 
 #input state holds the messages the user sends
 class AgentInputState(MessagesState):
     pass
+
+#schema for final output
+class MarketResults(BaseModel):
+    verdict: str = Field(description="good, bad, mixed, or no_clear_signal")
+    confidence: float = Field(description="A number between 0 and 1")
+    summary: list[str] = Field(description="Up to 8 bullet points")
+    tickers: list[str] = Field(description="Tickers or sectors mentioned")
+    sources: list[str] = Field(description="URLs used as sources")
 
 class AgentState(MessagesState):
     research_brief: Optional[str]
     supervisor_messages: Annotated[Sequence[BaseMessage], add_messages]
     raw_notes: Annotated[list[str], operator.add] = []
     notes: Annotated[list[str], operator.add] = []
-    final_report: str
+    market_results: Optional[MarketResults] = None
 
 #schema for when we need to aska clarifying question
 class ClarifyWithUser(BaseModel):
@@ -25,3 +35,4 @@ class ClarifyWithUser(BaseModel):
 #schema for the research brief we generate once we have enough info
 class ResearchQuestion(BaseModel):
     research_brief: str = Field(description="A research question that will be used to guide the research.")
+

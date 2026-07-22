@@ -7,9 +7,11 @@ from prompts import final_report_generation_prompt
 from state_scope import AgentState, AgentInputState
 from research_agent_scope import clarify_with_user, write_research_brief
 from multi_agent_supervisor import supervisor_agent
+import os
+from langchain_ollama import ChatOllama
 
 #swap in groq, keep max_tokens high so the report doesn't get cut off
-writer_model = init_chat_model(model="groq:llama-3.3-70b-versatile", max_tokens=32000)
+writer_model = init_chat_model(model="groq:llama-3.1-8b-instant", max_tokens=32000)
 
 async def final_report_generation(state: AgentState):
     notes = state.get("notes", [])
@@ -21,7 +23,9 @@ async def final_report_generation(state: AgentState):
         date=get_today_str()
     )
 
-    final_report = await writer_model.ainvoke([HumanMessage(content=final_report_prompt)])
+    structured_writer_model = writer_model.with_structured_output(MarketResults)
+
+    market_results = await structured_writer_model.ainvoke([HumanMessage(content=final_report_prompt)])
 
     return {
         "final_report": final_report.content,

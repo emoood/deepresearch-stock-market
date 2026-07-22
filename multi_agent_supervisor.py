@@ -10,13 +10,15 @@ from langgraph.types import Command
 from prompts import lead_researcher_prompt
 from research_agent import researcher_agent
 from state_multi_agent_supervisor import (SupervisorState, ConductResearch, ResearchComplete)
+import os
+from langchain_ollama import ChatOllama
 from utils import get_today_str, think_tool
 
 def get_notes_from_tool_calls(messages: list[BaseMessage]) -> list[str]:
     return [tool_msg.content for tool_msg in filter_messages(messages, include_types="tool")]
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = init_chat_model(model="groq:llama-3.3-70b-versatile")
+supervisor_model = init_chat_model(model="groq:llama-3.1-8b-instant")
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 #max research iterations and how many sub-agents can run in parallel

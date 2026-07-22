@@ -7,9 +7,28 @@ from langchain_core.tools import tool, InjectedToolArg
 from tavily import TavilyClient
 from state_research import Summary
 from prompts import summarize_webpage_prompt
+import os
+from langchain_ollama import ChatOllama
+from langchain_cerebras import ChatCerebras
+
 
 #groq 
-summarization_model = init_chat_model(model="groq:llama-3.3-70b-versatile")
+# summarization_model = init_chat_model(model="groq:llama-3.3-70b-versatile")
+# summarization_model = init_chat_model(model="groq:meta-llama/llama-4-scout-17b-16e-instruct",max_tokens=8192)
+# summarization_model = init_chat_model(model="google_genai:gemini-3.5-flash")
+
+# summarization_model = ChatCerebras(
+#     model="zai-glm-4.7",
+#     api_key=os.environ["CEREBRAS_API_KEY"],
+# )
+
+#summarization_model = init_chat_model(model="mistralai:mistral-large-latest")
+
+summarization_model = ChatOllama(
+    model="gemma4:12b-mlx",
+    base_url=os.environ["OLLAMA_BASE_URL"],
+)
+
 tavily_client = TavilyClient()
 
 def get_today_str() -> str:
@@ -23,8 +42,8 @@ def get_current_dir() -> Path:
 
 def tavily_search_multiple(
     search_queries: List[str],
-    max_results: int = 3,
-    topic: Literal["general", "news", "finance"] = "general",
+    max_results: int = 2,
+    topic: Literal["general", "news", "finance"] = "finance",
     include_raw_content: bool = True,
 ) -> List[dict]:
     search_docs = []
@@ -39,6 +58,7 @@ def tavily_search_multiple(
     return search_docs
 
 def summarize_webpage_content(webpage_content: str) -> str:
+    webpage_content = webpage_content[:6000] #only the first 6000 characters.
     try:
         structured_model = summarization_model.with_structured_output(Summary)
 
@@ -98,7 +118,7 @@ def format_search_output(summarized_results: dict) -> str:
 def tavily_search(
     query: str,
     max_results: Annotated[int, InjectedToolArg] = 3,
-    topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
+    topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "finance",
 ) -> str:
     """Fetch results from Tavily search API with content summarization.
 
@@ -110,6 +130,9 @@ def tavily_search(
     Returns:
         Formatted string of search results with summaries
     """
+
+    query = f"{query} {get_today_str()}"
+    
     search_results = tavily_search_multiple(
         [query],
         max_results=max_results,
